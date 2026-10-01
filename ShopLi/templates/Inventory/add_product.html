@@ -2,15 +2,117 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Add Product</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - ShopLi</title>
+    <style>
+        :root {
+            --dark-espresso: #3c2f2f;
+            --mocha-brown: #4b3832;
+            --warm-terracotta: #854442;
+            --cappuccino-gold: #be9b7b;
+            --cream-bg: #fff4e6;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--cream-bg);
+            color: var(--dark-espresso);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(60, 47, 47, 0.1);
+        }
+
+        h1 {
+            color: var(--mocha-brown);
+            margin-top: 0;
+            margin-bottom: 24px;
+            font-size: 1.8rem;
+            border-bottom: 3px solid var(--cappuccino-gold);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        form p {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        form label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--mocha-brown);
+        }
+
+        form input[type="text"],
+        form input[type="number"],
+        form select,
+        form input[type="file"] {
+            padding: 10px 12px;
+            border: 1px solid rgba(190, 155, 123, 0.5);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background-color: var(--cream-bg);
+            color: var(--dark-espresso);
+        }
+
+        form input:focus,
+        form select:focus {
+            outline: none;
+            border-color: var(--warm-terracotta);
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--warm-terracotta);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background-color: var(--mocha-brown);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--warm-terracotta);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
-<body style="font-family: sans-serif; padding: 40px;">
-    <h1>Add New Product</h1>
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save Product</button>
-    </form>
-    <p><a href="{% url 'index' %}">Back to Inventory</a></p>
+<body>
+
+    <div class="container">
+        <h1>Add New Product</h1>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save Product</button>
+        </form>
+        <a class="back-link" href="{% url 'index' %}">← Back to Inventory</a>
+    </div>
+
 </body>
 </html>
