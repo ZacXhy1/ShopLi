@@ -1,0 +1,11 @@
+{% extends "ShopLi/base.html" %}
+{% block title %}Region &amp; Language{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1 class="page-title">Region &amp; Language</h1><p class="muted">Choose how money and dates are shown.</p></div></div>
+<form method="post" class="card" style="max-width:640px">
+    {% csrf_token %}
+    {% include "ShopLi/partials/form_fields.html" %}
+    <p class="muted" style="font-size:.85rem">Currency and time zone apply across the whole app right away. Language is saved with your store, but the screens are currently available in English only.</p>
+    <button class="btn btn-primary">Save</button>
+</form>
+{% endblock %}

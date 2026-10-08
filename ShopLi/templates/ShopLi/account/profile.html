@@ -1,0 +1,20 @@
+{% extends "ShopLi/base.html" %}
+{% block title %}Profile settings{% endblock %}
+{% block content %}
+<div class="page-head"><h1 class="page-title">Profile settings</h1></div>
+<div class="two-col" style="align-items:start">
+    <form method="post" class="card" style="margin-bottom:0">
+        <h2>Your details</h2>
+        {% csrf_token %}<input type="hidden" name="action" value="profile">
+        <div class="field"><label>Username</label><input type="text" value="{{ user.username }}" disabled></div>
+        {% include "ShopLi/partials/form_fields.html" with form=profile_form %}
+        <button class="btn btn-primary">Save profile</button>
+    </form>
+    <form method="post" class="card" style="margin-bottom:0">
+        <h2>Change password</h2>
+        {% csrf_token %}<input type="hidden" name="action" value="password">
+        {% include "ShopLi/partials/form_fields.html" with form=password_form %}
+        <button class="btn btn-primary">Change password</button>
+    </form>
+</div>
+{% endblock %}

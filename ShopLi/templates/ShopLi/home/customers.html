@@ -1,0 +1,30 @@
+{% extends "ShopLi/home/home_base.html" %}
+{% load shopli_extras %}
+{% block title %}Customers{% endblock %}
+{% block home_content %}
+<div class="page-head"><h1 class="page-title">Customers</h1><a class="btn btn-primary" href="{% url 'customer_add' %}">+ Add customer</a></div>
+<form class="toolbar" method="get">
+    <input type="search" name="q" value="{{ q }}" class="input grow" placeholder="Search by name, phone or email..." aria-label="Search customers">
+    <button class="btn btn-primary">Search</button>
+    {% if q %}<a href="{% url 'customers' %}" class="btn btn-secondary">Clear</a>{% endif %}
+</form>
+<div class="card">
+{% if page_obj %}
+    <div class="table-wrap"><table>
+        <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Orders</th><th>Total spent</th><th></th></tr></thead>
+        <tbody>
+        {% for c in page_obj %}
+            <tr><td><strong>{{ c.name }}</strong></td><td>{{ c.phone|default:"-" }}</td><td>{{ c.email|default:"-" }}</td><td>{{ c.orders }}</td><td>{% money c.spent %}</td>
+                <td><div class="row-actions">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'customer_edit' c.pk %}">Edit</a>
+                    <form method="post" action="{% url 'customer_delete' c.pk %}" onsubmit="return confirm('Delete {{ c.name|escapejs }}? Their past receipts are kept.')">{% csrf_token %}<button class="btn btn-danger btn-sm">Delete</button></form>
+                </div></td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+    {% include "ShopLi/partials/pagination.html" %}
+{% else %}
+    <div class="empty">{% if q %}No customers match "{{ q }}".{% else %}No customers yet. Press <strong>+ Add customer</strong> to add your first regular.{% endif %}</div>
+{% endif %}
+</div>
+{% endblock %}

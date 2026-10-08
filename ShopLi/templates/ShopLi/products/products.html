@@ -1,0 +1,59 @@
+{% extends "ShopLi/base.html" %}
+{% load shopli_extras %}
+{% block title %}Product{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div><h1 class="page-title">Products</h1><p class="muted">{{ total }} product{{ total|pluralize }} in {{ store.name }}</p></div>
+    <a class="btn btn-primary" href="{% url 'product_add' %}">+ Add Product</a>
+</div>
+
+<form class="toolbar" method="get">
+    {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+    <input type="search" name="q" value="{{ q }}" class="input grow" placeholder="Search products..." aria-label="Search products">
+    <button class="btn btn-primary">Search</button>
+    {% if q or category %}<a href="{% url 'products' %}" class="btn btn-secondary">Clear</a>{% endif %}
+</form>
+
+<div class="pills">
+    <a class="pill {% if not category %}active{% endif %}" href="?{% if q %}q={{ q|urlencode }}{% endif %}">All</a>
+    {% for c in cats %}<a class="pill {% if c.obj.name == category %}active{% endif %}" href="?category={{ c.obj.name|urlencode }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">{{ c.obj.name }} ({{ c.count }})</a>{% endfor %}
+</div>
+
+{% if page_obj %}
+<div class="product-grid">
+    {% for p in page_obj %}
+    <a class="p-card" href="{% url 'product_edit' p.pk %}" aria-label="Edit {{ p.product_name }}">
+        {% include "ShopLi/partials/product_thumb.html" with product=p cls="pic" %}
+        <div class="body">
+            <h3>{{ p.product_name }}</h3>
+            <span class="tag">{{ p.category }}</span>
+            <div class="foot">
+                <span class="price">{% money p.selling_price %}</span>
+                {% if p.stock_state == 'out' %}<span class="badge badge-out-of-stock">Out of stock</span>{% elif p.stock_state == 'low' %}<span class="badge badge-low">{{ p.quantity }} left</span>{% else %}<span class="badge badge-available">{{ p.quantity }} in stock</span>{% endif %}
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% include "ShopLi/partials/pagination.html" %}
+{% else %}
+<div class="card"><div class="empty">{% if q or category %}No products match your search.{% else %}No products yet. Press <strong>+ Add Product</strong> to create your first one.{% endif %}</div></div>
+{% endif %}
+
+<details class="card cat-manage" style="margin-top:22px">
+    <summary>Manage categories</summary>
+    <div class="cat-list">
+        {% for c in cats %}
+        <form class="cat-item" method="post" action="{% url 'category_delete' c.obj.pk %}" onsubmit="return confirm('Delete the category {{ c.obj.name|escapejs }}?')">
+            {% csrf_token %}{{ c.obj.name }} <small class="muted">{{ c.count }}</small>
+            <button {% if c.count %}disabled title="Still used by {{ c.count }} product{{ c.count|pluralize }}"{% else %}title="Delete category"{% endif %} aria-label="Delete {{ c.obj.name }}">×</button>
+        </form>
+        {% empty %}<span class="muted">No categories yet.</span>{% endfor %}
+    </div>
+    <form method="post" action="{% url 'category_add' %}" class="toolbar" style="margin:0">
+        {% csrf_token %}
+        <input type="text" name="name" class="input grow" maxlength="100" placeholder="New category name" aria-label="New category name" required>
+        <button class="btn btn-primary">Add category</button>
+    </form>
+</details>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "ShopLi/home/home_base.html" %}
+{% block title %}{% if customer %}Edit customer{% else %}Add customer{% endif %}{% endblock %}
+{% block fab %}{% endblock %}
+{% block home_content %}
+<div class="page-head"><h1 class="page-title">{% if customer %}Edit customer{% else %}Add customer{% endif %}</h1></div>
+<form method="post" class="card" style="max-width:640px">
+    {% csrf_token %}
+    {% include "ShopLi/partials/form_fields.html" %}
+    <div class="form-actions"><button class="btn btn-primary">Save customer</button><a class="btn btn-secondary" href="{% url 'customers' %}">Cancel</a></div>
+</form>
+{% endblock %}

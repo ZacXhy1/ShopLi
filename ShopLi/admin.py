@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Category, Customer, Feedback, Product, Sale, Store, Transaction
+
+for model in (Store, Category, Product, Customer, Sale, Transaction, Feedback):
+    admin.site.register(model)

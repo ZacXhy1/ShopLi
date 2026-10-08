@@ -1,0 +1,87 @@
+{% extends "ShopLi/base.html" %}
+{% block title %}{% if product %}Edit product{% else %}Add product{% endif %}{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div><h1 class="page-title">{% if product %}Edit product{% else %}Add product{% endif %}</h1>
+    {% if product %}<p class="muted">#{{ product.product_id }} · added {{ product.date_added|date:"M j, Y" }}</p>{% endif %}</div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="form-layout">
+        <div>
+            <div class="card">
+                <h2>Product details</h2>
+                {% include "ShopLi/partials/field.html" with field=form.product_name %}
+                <div class="form-grid">
+                    {% include "ShopLi/partials/field.html" with field=form.category %}
+                    {% include "ShopLi/partials/field.html" with field=form.sku %}
+                </div>
+                {% include "ShopLi/partials/field.html" with field=form.description %}
+                <datalist id="category-list">{% for c in categories %}<option value="{{ c.name }}">{% endfor %}</datalist>
+            </div>
+            <div class="card">
+                <h2>Pricing &amp; stock</h2>
+                <div class="form-grid">
+                    {% include "ShopLi/partials/field.html" with field=form.cost_price %}
+                    {% include "ShopLi/partials/field.html" with field=form.selling_price %}
+                    {% include "ShopLi/partials/field.html" with field=form.quantity %}
+                    {% include "ShopLi/partials/field.html" with field=form.low_stock_threshold %}
+                </div>
+                <div class="margin-box" id="margin-box">Enter a cost and selling price to see your profit.</div>
+                <p class="help muted" style="font-size:.8rem;margin-bottom:0">Status switches to Out of Stock automatically when stock reaches 0.</p>
+            </div>
+        </div>
+        <div>
+            <div class="card">
+                <h2>Product photo</h2>
+                <div id="preview-box">
+                    {% if product.product_image %}<img class="img-preview" src="{{ product.product_image.url }}" alt="Current photo">
+                    {% else %}<div class="img-preview img-ph" role="img" aria-label="No photo yet"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></div>{% endif %}
+                </div>
+                <input type="file" name="product_image" id="id_product_image" accept="image/*">
+                {% if product.product_image %}<label class="check"><input type="checkbox" name="product_image-clear"> Remove current photo</label>{% endif %}
+                {% for e in form.product_image.errors %}<div class="error">{{ e }}</div>{% endfor %}
+                <p class="help muted" style="font-size:.8rem">Optional. Without a photo, a placeholder is shown.</p>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" style="flex:1">{% if product %}Save changes{% else %}Add product{% endif %}</button>
+                <a class="btn btn-secondary" href="{% if next %}{{ next }}{% else %}{% url 'products' %}{% endif %}">Cancel</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% if product %}
+<div class="card danger-zone" style="max-width:640px">
+    <h2>Delete this product</h2>
+    <p class="muted" style="margin-top:0">This removes the product from your store. Past receipts keep their record of it.</p>
+    <form method="post" action="{% url 'product_delete' product.pk %}" onsubmit="return confirm('Delete {{ product.product_name|escapejs }}? This cannot be undone.')">
+        {% csrf_token %}<button class="btn btn-danger">Delete product</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var cost = document.getElementById('id_cost_price'), sell = document.getElementById('id_selling_price'), box = document.getElementById('margin-box');
+    function margin() {
+        var c = parseFloat(cost.value), s = parseFloat(sell.value);
+        if (isNaN(c) || isNaN(s)) { box.textContent = 'Enter a cost and selling price to see your profit.'; return; }
+        var p = s - c;
+        box.textContent = 'Profit per item: {{ store.currency|escapejs }}' + p.toFixed(2) + (s > 0 ? '  ·  Margin: ' + (p / s * 100).toFixed(1) + '%' : '');
+    }
+    cost.addEventListener('input', margin); sell.addEventListener('input', margin); margin();
+
+    document.getElementById('id_product_image').addEventListener('change', function () {
+        var f = this.files[0]; if (!f) return;
+        var img = document.createElement('img'); img.className = 'img-preview'; img.alt = 'Selected photo'; img.src = URL.createObjectURL(f);
+        var b = document.getElementById('preview-box'); b.textContent = ''; b.appendChild(img);
+    });
+})();
+</script>
+{% endblock %}

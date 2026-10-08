@@ -1,0 +1,40 @@
+{% extends "ShopLi/home/home_base.html" %}
+{% load shopli_extras %}
+{% block title %}{{ sale.receipt_no }}{% endblock %}
+{% block fab %}{% endblock %}
+{% block home_content %}
+{% if is_new %}<div class="alert alert-success no-print">Sale complete! Stock has been updated.</div>{% endif %}
+<div class="page-head no-print">
+    <h1 class="page-title">Receipt {{ sale.receipt_no }}</h1>
+    <div class="form-actions" style="margin:0">
+        <button class="btn btn-primary" onclick="window.print()">Print</button>
+        <a class="btn btn-secondary" href="{% url 'pos' %}">New sale</a>
+        <a class="btn btn-secondary" href="{% url 'receipts' %}">All receipts</a>
+    </div>
+</div>
+<article class="receipt">
+    <h2>{{ store.name }}</h2>
+    <div class="center">{% if store.address %}{{ store.address }}<br>{% endif %}{% if store.phone %}{{ store.phone }}{% endif %}</div>
+    <hr>
+    <div class="line"><span>Receipt</span><span>{{ sale.receipt_no }}</span></div>
+    <div class="line"><span>Date</span><span>{{ sale.date_time|date:"Y-m-d H:i" }}</span></div>
+    <div class="line"><span>Cashier</span><span>{{ sale.cashier.username|default:"-" }}</span></div>
+    <div class="line"><span>Customer</span><span>{{ sale.customer.name|default:"Walk-in" }}</span></div>
+    <hr>
+    <table>
+        <thead><tr><th style="text-align:left">Item</th><th>Qty</th><th class="right">Amount</th></tr></thead>
+        <tbody>{% for i in items %}
+            <tr><td>{% if i.product_name %}{{ i.product_name }}{% elif i.product %}{{ i.product.product_name }}{% else %}Deleted item{% endif %}<br><small>@ {% money i.unit_price %}</small></td><td style="text-align:center">{{ i.quantity_sold }}</td><td class="right">{% money i.total_amount %}</td></tr>
+        {% endfor %}</tbody>
+    </table>
+    <hr>
+    <div class="line"><span>Subtotal</span><span>{% money sale.subtotal %}</span></div>
+    {% if sale.discount %}<div class="line"><span>Discount</span><span>-{% money sale.discount %}</span></div>{% endif %}
+    {% if sale.tax %}<div class="line"><span>Tax</span><span>{% money sale.tax %}</span></div>{% endif %}
+    <div class="line grand"><span>TOTAL</span><span>{% money sale.total %}</span></div>
+    <hr>
+    <div class="line"><span>Paid by {{ sale.payment_method }}</span><span>{% money sale.amount_tendered %}</span></div>
+    {% if sale.payment_method == 'Cash' %}<div class="line"><span>Change</span><span>{% money sale.change_due %}</span></div>{% endif %}
+    {% if store.receipt_footer %}<hr><div class="center">{{ store.receipt_footer }}</div>{% endif %}
+</article>
+{% endblock %}

@@ -1,0 +1,1 @@
+{% if product.product_image %}<img src="{{ product.product_image.url }}" alt="{{ product.product_name }}" class="{{ cls }}" loading="lazy">{% else %}<div class="{{ cls }} img-ph" role="img" aria-label="No product image"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></div>{% endif %}

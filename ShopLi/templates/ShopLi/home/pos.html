@@ -1,0 +1,174 @@
+{% extends "ShopLi/home/home_base.html" %}
+{% load l10n shopli_extras %}
+{% block title %}POS{% endblock %}
+{% block fab %}{% endblock %}
+{% block home_content %}
+<div class="page-head"><h1 class="page-title">Point of Sale</h1></div>
+
+{% if not products %}
+<div class="empty">You have no products yet. <a href="{% url 'product_add' %}?next={{ request.path }}">Add your first product</a> to start selling.</div>
+{% else %}
+<div class="pos">
+    <section>
+        <div class="toolbar"><input type="search" id="pos-search" class="input grow" placeholder="Search products by name or code..." aria-label="Search products"></div>
+        <div class="pills" id="pos-cats">
+            <button type="button" class="pill active" data-cat="">All</button>
+            {% for c in categories %}<button type="button" class="pill" data-cat="{{ c.name }}">{{ c.name }}</button>{% endfor %}
+        </div>
+        <div class="pos-products" id="pos-products">
+            {% for p in products %}
+            <button type="button" class="pos-tile" {% if p.quantity <= 0 %}disabled{% endif %}
+                data-id="{{ p.pk }}" data-name="{{ p.product_name }}" data-price="{{ p.selling_price|unlocalize }}"
+                data-stock="{{ p.quantity }}" data-category="{{ p.category }}" data-search="{{ p.product_name|lower }} {{ p.sku|lower }}">
+                {% include "ShopLi/partials/product_thumb.html" with product=p cls="pic" %}
+                <span class="meta"><b>{{ p.product_name }}</b><span class="price">{% money p.selling_price %}</span><br>
+                <small class="muted">{% if p.quantity <= 0 %}Out of stock{% else %}{{ p.quantity }} in stock{% endif %}</small></span>
+            </button>
+            {% endfor %}
+        </div>
+        <p class="empty hidden" id="pos-none">No products match your search.</p>
+    </section>
+
+    <aside class="card cart" aria-label="Current sale">
+        <h2>Current sale</h2>
+        {% csrf_token %}
+        <div class="cart-lines" id="cart-lines"></div>
+        <p class="muted" id="cart-empty">Tap a product to add it.</p>
+
+        <div class="field"><label for="customer">Customer (optional)</label>
+            <select id="customer"><option value="">Walk-in customer</option>{% for c in customers %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}</select></div>
+        <div class="two">
+            <div class="field"><label for="discount">Discount ({{ store.currency }})</label><input type="number" id="discount" min="0" step="0.01" value="0"></div>
+            <div class="field"><label for="method">Payment</label>
+                <select id="method">{% for v, label in payment_methods %}<option value="{{ v }}">{{ label }}</option>{% endfor %}</select></div>
+        </div>
+
+        <div class="totals">
+            <div><span>Subtotal</span><span id="t-sub">0.00</span></div>
+            <div><span>Discount</span><span id="t-disc">0.00</span></div>
+            <div><span>Tax ({{ store.tax_rate|floatformat:"-2" }}%)</span><span id="t-tax">0.00</span></div>
+            <div class="grand"><span>Total</span><span id="t-total">0.00</span></div>
+        </div>
+
+        <div id="cash-box">
+            <div class="two">
+                <div class="field"><label for="tendered">Cash received</label><input type="number" id="tendered" min="0" step="0.01" placeholder="0.00"></div>
+                <div class="field"><label>Change</label><div class="input" id="t-change" style="background:var(--cream-bg)">0.00</div></div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="exact" style="margin-bottom:10px">Exact amount</button>
+        </div>
+
+        <div class="form-actions" style="margin-top:0">
+            <button type="button" class="btn btn-primary" id="checkout" style="flex:1" disabled>Checkout</button>
+            <button type="button" class="btn btn-secondary" id="clear">Clear</button>
+        </div>
+        <div class="alert alert-error hidden" id="pos-error" role="alert"></div>
+    </aside>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if products %}
+<script>
+(function () {
+    var CUR = "{{ store.currency|escapejs }}", RATE = {{ store.tax_rate|unlocalize }};
+    var cart = {}, $ = function (id) { return document.getElementById(id); };
+    var fmt = function (n) { return n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); };
+    var round2 = function (n) { return Math.round((n + Number.EPSILON) * 100) / 100; };
+    var cat = '';
+
+    function totals() {
+        var sub = 0; Object.values(cart).forEach(function (l) { sub += l.price * l.qty; });
+        var disc = Math.min(Math.max(parseFloat($('discount').value) || 0, 0), sub);
+        var tax = round2((sub - disc) * RATE / 100);
+        return {sub: sub, disc: disc, tax: tax, total: round2(sub - disc + tax)};
+    }
+
+    function render() {
+        var box = $('cart-lines'); box.textContent = '';
+        var ids = Object.keys(cart);
+        $('cart-empty').classList.toggle('hidden', ids.length > 0);
+        ids.forEach(function (id) {
+            var l = cart[id], row = document.createElement('div'); row.className = 'cart-line';
+            var name = document.createElement('div'); name.innerHTML = '<b></b><br><small class="muted"></small>';
+            name.querySelector('b').textContent = l.name; name.querySelector('small').textContent = CUR + fmt(l.price) + ' each';
+            var amt = document.createElement('div'); amt.className = 'right'; amt.textContent = CUR + fmt(l.price * l.qty);
+            var qty = document.createElement('div'); qty.className = 'qty';
+            [['−', -1], [String(l.qty), 0], ['+', 1]].forEach(function (b) {
+                if (b[1] === 0) { var s = document.createElement('span'); s.textContent = b[0]; qty.appendChild(s); return; }
+                var btn = document.createElement('button'); btn.type = 'button'; btn.textContent = b[0];
+                btn.setAttribute('aria-label', (b[1] > 0 ? 'Add one ' : 'Remove one ') + l.name);
+                btn.onclick = function () { change(id, b[1]); }; qty.appendChild(btn);
+            });
+            var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'rm'; rm.textContent = 'Remove';
+            rm.onclick = function () { delete cart[id]; render(); };
+            var right = document.createElement('div'); right.className = 'right'; right.appendChild(rm);
+            row.append(name, amt, qty, right); box.appendChild(row);
+        });
+        var t = totals();
+        $('t-sub').textContent = CUR + fmt(t.sub); $('t-disc').textContent = '−' + CUR + fmt(t.disc);
+        $('t-tax').textContent = CUR + fmt(t.tax); $('t-total').textContent = CUR + fmt(t.total);
+        var cash = $('method').value === 'Cash';
+        $('cash-box').classList.toggle('hidden', !cash);
+        var tendered = parseFloat($('tendered').value) || 0;
+        $('t-change').textContent = CUR + fmt(Math.max(0, round2(tendered - t.total)));
+        $('checkout').disabled = !ids.length || (cash && tendered < t.total);
+    }
+
+    function change(id, d) {
+        var l = cart[id]; l.qty += d;
+        if (l.qty > l.stock) { l.qty = l.stock; showError('Only ' + l.stock + ' of "' + l.name + '" in stock.'); } else { showError(''); }
+        if (l.qty < 1) delete cart[id];
+        render();
+    }
+    function showError(msg) { var e = $('pos-error'); e.textContent = msg; e.classList.toggle('hidden', !msg); }
+
+    document.querySelectorAll('.pos-tile').forEach(function (tile) {
+        tile.addEventListener('click', function () {
+            var id = tile.dataset.id;
+            if (!cart[id]) cart[id] = {id: id, name: tile.dataset.name, price: parseFloat(tile.dataset.price), stock: parseInt(tile.dataset.stock, 10), qty: 0};
+            change(id, 1);
+        });
+    });
+
+    function filter() {
+        var q = $('pos-search').value.trim().toLowerCase(), shown = 0;
+        document.querySelectorAll('.pos-tile').forEach(function (t) {
+            var ok = (!cat || t.dataset.category === cat) && (!q || t.dataset.search.indexOf(q) > -1);
+            t.classList.toggle('hidden', !ok); if (ok) shown++;
+        });
+        $('pos-none').classList.toggle('hidden', shown > 0);
+    }
+    $('pos-search').addEventListener('input', filter);
+    $('pos-cats').addEventListener('click', function (e) {
+        if (!e.target.dataset.hasOwnProperty('cat')) return;
+        cat = e.target.dataset.cat;
+        document.querySelectorAll('#pos-cats .pill').forEach(function (p) { p.classList.toggle('active', p === e.target); });
+        filter();
+    });
+
+    ['discount', 'tendered', 'method'].forEach(function (id) { $(id).addEventListener('input', render); });
+    $('exact').onclick = function () { $('tendered').value = totals().total.toFixed(2); render(); };
+    $('clear').onclick = function () { cart = {}; $('discount').value = 0; $('tendered').value = ''; showError(''); render(); };
+
+    $('checkout').onclick = function () {
+        var btn = $('checkout'); btn.disabled = true; btn.textContent = 'Processing...';
+        fetch("{% url 'pos_checkout' %}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value},
+            body: JSON.stringify({
+                items: Object.values(cart).map(function (l) { return {id: l.id, qty: l.qty}; }),
+                customer: $('customer').value, discount: $('discount').value || 0,
+                payment_method: $('method').value, tendered: $('tendered').value || 0
+            })
+        }).then(function (r) { return r.json(); }).then(function (res) {
+            if (res.ok) { window.location = res.url; return; }
+            showError(res.error); btn.textContent = 'Checkout'; render();
+        }).catch(function () { showError('Could not reach the server. Please try again.'); btn.textContent = 'Checkout'; render(); });
+    };
+    render();
+})();
+</script>
+{% endif %}
+{% endblock %}

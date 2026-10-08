@@ -1,0 +1,59 @@
+{% extends "ShopLi/base.html" %}
+{% load shopli_extras %}
+{% block title %}Inventory{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div><h1 class="page-title">Inventory</h1><p class="muted">Search, sort and update the stock of every product.</p></div>
+    <a class="btn btn-primary" href="{% url 'product_add' %}?next={{ request.get_full_path|urlencode }}">+ Add Product</a>
+</div>
+
+<div class="stats">
+    <div class="stat"><div class="label">Products</div><div class="value">{{ total_products }}</div></div>
+    <div class="stat"><div class="label">Units in stock</div><div class="value">{{ total_units }}</div></div>
+    <div class="stat"><div class="label">Stock value (at cost)</div><div class="value">{% money stock_value %}</div></div>
+    <div class="stat {% if low_count or out_count %}warn{% endif %}"><div class="label">Low / out of stock</div><div class="value">{{ low_count }} / {{ out_count }}</div></div>
+</div>
+
+<form class="toolbar" method="get" id="filters">
+    <input type="hidden" name="sort" value="{{ sort }}"><input type="hidden" name="dir" value="{{ dir }}">
+    <input type="search" name="q" value="{{ q }}" class="input grow" placeholder="Search by name, code or category..." aria-label="Search inventory">
+    <select name="category" class="input" aria-label="Filter by category" onchange="this.form.submit()">
+        <option value="">All categories</option>
+        {% for c in categories %}<option value="{{ c.name }}" {% if c.name == category %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary">Search</button>
+    {% if q or category %}<a href="{% url 'inventory' %}" class="btn btn-secondary">Clear</a>{% endif %}
+</form>
+
+<div class="card">
+{% if page_obj %}
+    <div class="table-wrap"><table>
+        <thead><tr>
+            {% for h in headers %}<th scope="col"><a href="{{ h.url }}" title="Sort by {{ h.label }}">{{ h.label }}{% if h.active %} {{ h.arrow }}{% endif %}</a></th>{% endfor %}
+            <th scope="col">Status</th>
+        </tr></thead>
+        <tbody>
+        {% for p in page_obj %}
+            <tr>
+                <td><strong>#{{ p.product_id }}</strong></td>
+                <td><div class="cell-product">{% include "ShopLi/partials/product_thumb.html" with product=p cls="thumb" %}<a href="{% url 'product_edit' p.pk %}?next={{ request.get_full_path|urlencode }}" style="color:inherit;font-weight:600;text-decoration:none">{{ p.product_name }}</a></div></td>
+                <td>{{ p.category }}</td>
+                <td>{% money p.selling_price %}</td>
+                <td>
+                    <form class="stock-form" method="post" action="{% url 'update_stock' p.pk %}">
+                        {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <input type="number" name="quantity" min="0" step="1" value="{{ p.quantity }}" aria-label="Stock for {{ p.product_name }}">
+                        <button class="btn btn-primary btn-sm">Save</button>
+                    </form>
+                </td>
+                <td>{% if p.stock_state == 'out' %}<span class="badge badge-out-of-stock">Out of Stock</span>{% elif p.stock_state == 'low' %}<span class="badge badge-low">Low stock</span>{% else %}<span class="badge badge-available">Available</span>{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+    {% include "ShopLi/partials/pagination.html" %}
+{% else %}
+    <div class="empty">{% if q or category %}No products match your search.{% else %}Your inventory is empty. <a href="{% url 'product_add' %}">Add your first product</a>.{% endif %}</div>
+{% endif %}
+</div>
+{% endblock %}

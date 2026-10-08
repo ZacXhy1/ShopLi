@@ -1,0 +1,19 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - ShopLi</title>
+    <link rel="stylesheet" href="{% static 'ShopLi/css/app.css' %}">
+</head>
+<body class="auth-body">
+    <div class="auth-shell">
+        <section class="auth-side">
+            <div class="logo-ph" aria-hidden="true">LOGO</div>
+            <h1>ShopLi</h1>
+            <p>Store management made simple. Manage your products, track your stock and ring up sales, all in one place.</p>
+        </section>
+        <section class="auth-form">{% block form_content %}{% endblock %}</section>
+    </div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{% extends "ShopLi/home/home_base.html" %}
+{% block title %}Tutorials{% endblock %}
+{% block home_content %}
+<div class="page-head"><div><h1 class="page-title">Tutorials</h1><p class="muted">Short guides for everything in ShopLi. Tap a title to open it.</p></div></div>
+<div class="card prose" style="max-width:820px">
+    {% for title, steps in tutorials %}
+    <details class="qa" {% if forloop.first %}open{% endif %}>
+        <summary>{{ title }}</summary>
+        <ol>{% for s in steps %}<li>{{ s }}</li>{% endfor %}</ol>
+    </details>
+    {% endfor %}
+</div>
+{% endblock %}

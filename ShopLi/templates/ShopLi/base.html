@@ -1,0 +1,65 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ShopLi{% endblock %} - ShopLi</title>
+    <link rel="stylesheet" href="{% static 'ShopLi/css/app.css' %}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{% url 'home' %}">
+            <!-- Logo placeholder: swap this div for <img src="{% static 'ShopLi/logo.png' %}" height="40" alt=""> when you have a logo -->
+            <div class="logo-ph" aria-hidden="true">LOGO</div>
+            <span class="brand-name">ShopLi</span>
+        </a>
+
+        <div class="menu-wrap">
+            <button class="menu-btn" id="menu-btn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="dropdown" id="menu" aria-label="Account menu">
+                <div class="who"><strong>{{ user.get_full_name|default:user.username }}</strong><span class="muted">{{ store.name }}</span></div>
+                <a href="{% url 'profile' %}">Profile settings</a>
+                <a href="{% url 'about' %}">About us</a>
+                <a href="{% url 'terms' %}">Terms and Conditions</a>
+                <a href="{% url 'feedback' %}">Feedback</a>
+                <a href="{% url 'faq' %}">FAQ</a>
+                <a href="{% url 'region' %}">Region &amp; Language</a>
+                <div class="sep"></div>
+                <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="logout">Log out</button></form>
+            </nav>
+        </div>
+    </header>
+
+    <nav class="sidenav" aria-label="Main">
+        <a href="{% url 'home' %}" class="{% if '/home/' in request.path %}active{% endif %}">
+            <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+        <a href="{% url 'inventory' %}" class="{% if '/inventory/' in request.path %}active{% endif %}">
+            <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>Inventory</a>
+        <a href="{% url 'products' %}" class="{% if '/products/' in request.path %}active{% endif %}">
+            <svg viewBox="0 0 24 24"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>Product</a>
+        <a href="{% url 'store' %}" class="{% if '/store/' in request.path %}active{% endif %}">
+            <svg viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 006 0 3 3 0 006 0 3 3 0 006 0"/><path d="M5 12v8h14v-8"/></svg>Store</a>
+        <div class="store-chip"><strong>{{ store.name }}</strong>Signed in as {{ user.username }}</div>
+    </nav>
+
+    <main class="main">
+        {% for message in messages %}<div class="alert alert-{{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block fab %}{% endblock %}
+
+    <script>
+        (function () {
+            var btn = document.getElementById('menu-btn'), menu = document.getElementById('menu');
+            function setOpen(open) { menu.classList.toggle('open', open); btn.setAttribute('aria-expanded', open); }
+            btn.addEventListener('click', function (e) { e.stopPropagation(); setOpen(!menu.classList.contains('open')); });
+            document.addEventListener('click', function (e) { if (!menu.contains(e.target)) setOpen(false); });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+        })();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

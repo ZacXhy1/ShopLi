@@ -1,0 +1,14 @@
+{% extends "ShopLi/auth/auth_base.html" %}
+{% block title %}Log in{% endblock %}
+{% block form_content %}
+<h2>Welcome back</h2>
+<p class="muted" style="margin-top:0">Log in to open your store.</p>
+{% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% include "ShopLi/partials/form_fields.html" %}
+    <button type="submit" class="btn btn-primary">Log in</button>
+</form>
+<p class="auth-switch">New to ShopLi? <a href="{% url 'signup' %}">Create an account</a></p>
+{% endblock %}

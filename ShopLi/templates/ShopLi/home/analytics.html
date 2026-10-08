@@ -1,0 +1,58 @@
+{% extends "ShopLi/home/home_base.html" %}
+{% load shopli_extras %}
+{% block title %}Analytics{% endblock %}
+{% block home_content %}
+<div class="page-head">
+    <h1 class="page-title">Analytics</h1>
+    <div class="pills" style="margin:0">
+        <a class="pill {% if days == 7 %}active{% endif %}" href="?range=7">Last 7 days</a>
+        <a class="pill {% if days == 30 %}active{% endif %}" href="?range=30">Last 30 days</a>
+        <a class="pill {% if days == 90 %}active{% endif %}" href="?range=90">Last 90 days</a>
+    </div>
+</div>
+<div class="stats">
+    <div class="stat"><div class="label">Sales (with tax)</div><div class="value">{% money total %}</div></div>
+    <div class="stat"><div class="label">Estimated profit</div><div class="value">{% money profit %}</div></div>
+    <div class="stat"><div class="label">Orders</div><div class="value">{{ orders }}</div></div>
+    <div class="stat"><div class="label">Items sold</div><div class="value">{{ units }}</div></div>
+    <div class="stat"><div class="label">Average order</div><div class="value">{% money average %}</div></div>
+</div>
+
+<div class="card">
+    <h2>Sales per day</h2>
+    <div class="chart" role="img" aria-label="Bar chart of daily sales">
+        {% for b in bars %}<div class="col" title="{{ b.label }}: {% money b.value %}"><div class="bar" style="height: {{ b.pct|stringformat:'.1f' }}%"></div></div>{% endfor %}
+    </div>
+    <div class="chart-labels">{% for b in bars %}<span>{% if b.show %}{{ b.label }}{% endif %}</span>{% endfor %}</div>
+</div>
+
+<div class="two-col">
+    <div class="card">
+        <h2>Top products</h2>
+        {% for t in top %}
+            <div class="hbar"><div style="display:flex;justify-content:space-between"><span>{{ t.product_name|default:"(deleted product)" }}</span><strong>{{ t.units }} sold</strong></div><span class="muted">{% money t.revenue %}</span></div>
+        {% empty %}<p class="muted">No sales in this period yet.</p>{% endfor %}
+    </div>
+    <div class="card">
+        <h2>Sales by category</h2>
+        {% for c in by_cat %}
+            <div class="hbar"><div style="display:flex;justify-content:space-between"><span>{{ c.name }}</span><strong>{% money c.revenue %}</strong></div><div class="track"><div class="fill" style="width: {{ c.pct|stringformat:'.1f' }}%"></div></div></div>
+        {% empty %}<p class="muted">No sales in this period yet.</p>{% endfor %}
+    </div>
+</div>
+
+<div class="card" style="margin-top:22px">
+    <h2>Needs restocking</h2>
+    {% if low_stock %}
+    <div class="table-wrap"><table>
+        <thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Status</th></tr></thead>
+        <tbody>{% for p in low_stock %}
+            <tr><td><strong>{{ p.product_name }}</strong></td><td>{{ p.category }}</td><td>{{ p.quantity }}</td>
+                <td>{% if p.quantity <= 0 %}<span class="badge badge-out-of-stock">Out of stock</span>{% else %}<span class="badge badge-low">Low stock</span>{% endif %}</td></tr>
+        {% endfor %}</tbody>
+    </table></div>
+    <p class="muted" style="margin-bottom:0">Update counts on the <a href="{% url 'inventory' %}">Inventory</a> page.</p>
+    {% else %}<p class="muted" style="margin:0">Everything is well stocked.</p>{% endif %}
+</div>
+<p class="muted">Profit is sales minus discounts and the cost price of the items sold. Tax is not counted as profit.</p>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "ShopLi/base.html" %}
+{% block title %}{{ page.title }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1 class="page-title">{{ page.title }}</h1></div>
+<div class="card prose">
+    <p class="muted" style="margin-top:0">{{ page.intro }}</p>
+    {% if slug == 'faq' %}
+        {% for q, a in page.sections %}<details class="qa"><summary>{{ q }}</summary><p>{{ a }}</p></details>{% endfor %}
+    {% else %}
+        {% for heading, body in page.sections %}<h2>{{ heading }}</h2><p>{{ body }}</p>{% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

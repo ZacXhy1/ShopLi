@@ -1,0 +1,41 @@
+{% extends "ShopLi/home/home_base.html" %}
+{% load shopli_extras %}
+{% block title %}Home{% endblock %}
+{% block home_content %}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Hello, {{ user.first_name|default:user.username }}</h1>
+        <p class="muted">Here is how {{ store.name }} is doing today.</p>
+    </div>
+    <a href="{% url 'pos' %}" class="btn btn-primary">Open POS</a>
+</div>
+
+<div class="stats">
+    <div class="stat"><div class="label">Sales today</div><div class="value">{% money today_total %}</div></div>
+    <div class="stat"><div class="label">Orders today</div><div class="value">{{ today_orders }}</div></div>
+    <div class="stat"><div class="label">Products</div><div class="value">{{ product_count }}</div></div>
+    <div class="stat {% if low_stock %}warn{% endif %}"><div class="label">Low or out of stock</div><div class="value">{{ low_stock }}</div></div>
+</div>
+
+<div class="tiles">
+    {% for url, name, desc, icon in features %}
+    <a class="tile" href="{% url url %}"><div class="ico" aria-hidden="true">{{ icon }}</div><div><strong>{{ name }}</strong><span class="d">{{ desc }}</span></div></a>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2>Recent receipts</h2>
+    {% if recent %}
+    <div class="table-wrap"><table>
+        <thead><tr><th>Receipt</th><th>Date</th><th>Customer</th><th>Total</th><th></th></tr></thead>
+        <tbody>
+        {% for s in recent %}
+            <tr><td><strong>{{ s.receipt_no }}</strong></td><td>{{ s.date_time|date:"Y-m-d H:i" }}</td><td>{{ s.customer.name|default:"Walk-in" }}</td><td>{% money s.total %}</td><td class="right"><a href="{% url 'receipt_detail' s.pk %}">View</a></td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+    {% else %}
+    <div class="empty">No sales yet. Open the <a href="{% url 'pos' %}">POS</a> to make your first one.</div>
+    {% endif %}
+</div>
+{% endblock %}

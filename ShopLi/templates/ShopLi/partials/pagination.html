@@ -1,0 +1,16 @@
+{% load shopli_extras %}
+{% if page_obj.paginator.count %}
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="pager" aria-label="Pages">
+    {% if page_obj.has_previous %}<a href="?{{ qs }}{% if qs %}&amp;{% endif %}page={{ page_obj.previous_page_number }}">‹ Prev</a>{% else %}<span class="off">‹ Prev</span>{% endif %}
+    {% page_numbers page_obj as pages %}
+    {% for n in pages %}
+        {% if n == page_obj.number %}<span class="current" aria-current="page">{{ n }}</span>
+        {% elif n == '…' %}<span class="gap">…</span>
+        {% else %}<a href="?{{ qs }}{% if qs %}&amp;{% endif %}page={{ n }}">{{ n }}</a>{% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}<a href="?{{ qs }}{% if qs %}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next ›</a>{% else %}<span class="off">Next ›</span>{% endif %}
+</nav>
+{% endif %}
+<p class="count-note muted">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</p>
+{% endif %}

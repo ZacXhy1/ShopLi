@@ -1,0 +1,60 @@
+{% extends "ShopLi/home/home_base.html" %}
+{% block title %}Calculator{% endblock %}
+{% block home_content %}
+<div class="page-head"><h1 class="page-title">Calculator</h1><p class="muted">You can also use your keyboard.</p></div>
+<div class="calc" role="application" aria-label="Calculator">
+    <div class="calc-screen" aria-live="polite"><div class="expr" id="expr"></div><div class="out" id="out">0</div></div>
+    <div class="calc-keys" id="keys">
+        <button data-a="clear" class="op">C</button><button data-a="back" class="op">⌫</button><button data-a="pct" class="op">%</button><button data-a="op" data-v="÷" class="op">÷</button>
+        <button data-a="d" data-v="7">7</button><button data-a="d" data-v="8">8</button><button data-a="d" data-v="9">9</button><button data-a="op" data-v="×" class="op">×</button>
+        <button data-a="d" data-v="4">4</button><button data-a="d" data-v="5">5</button><button data-a="d" data-v="6">6</button><button data-a="op" data-v="−" class="op">−</button>
+        <button data-a="d" data-v="1">1</button><button data-a="d" data-v="2">2</button><button data-a="d" data-v="3">3</button><button data-a="op" data-v="+" class="op">+</button>
+        <button data-a="neg">±</button><button data-a="d" data-v="0">0</button><button data-a="dot">.</button><button data-a="eq" class="eq">=</button>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+    var cur = '0', prev = null, op = null, fresh = false, out = document.getElementById('out'), expr = document.getElementById('expr');
+    function num(s) { return parseFloat(s); }
+    function show(n) { var s = String(n); return s.length > 14 && !isNaN(n) ? String(parseFloat(num(s).toPrecision(12))) : s; }
+    function calc(a, o, b) {
+        var r = o === '+' ? a + b : o === '−' ? a - b : o === '×' ? a * b : (b === 0 ? NaN : a / b);
+        return isNaN(r) ? 'Error' : parseFloat(r.toPrecision(12));
+    }
+    function paint() { out.textContent = cur; }
+    function reset() { cur = '0'; prev = null; op = null; fresh = false; expr.textContent = ''; }
+    function press(a, v) {
+        if (cur === 'Error' && a !== 'clear') reset();
+        if (a === 'd') { cur = (fresh || cur === '0') ? v : cur + v; fresh = false; }
+        else if (a === 'dot') { if (fresh) { cur = '0.'; fresh = false; } else if (cur.indexOf('.') < 0) cur += '.'; }
+        else if (a === 'clear') reset();
+        else if (a === 'back') { if (!fresh) cur = cur.length > 1 && !(cur.length === 2 && cur[0] === '-') ? cur.slice(0, -1) : '0'; }
+        else if (a === 'neg') { if (cur !== '0') cur = cur[0] === '-' ? cur.slice(1) : '-' + cur; }
+        else if (a === 'pct') { cur = show(op && prev !== null ? prev * num(cur) / 100 : num(cur) / 100); fresh = true; }
+        else if (a === 'op') {
+            if (op && !fresh) { cur = show(calc(prev, op, num(cur))); }
+            if (cur === 'Error') { prev = null; op = null; expr.textContent = ''; }
+            else { prev = num(cur); op = v; expr.textContent = show(prev) + ' ' + op; }
+            fresh = true;
+        } else if (a === 'eq' && op) {
+            var b = num(cur); expr.textContent = show(prev) + ' ' + op + ' ' + show(b) + ' =';
+            cur = show(calc(prev, op, b)); op = null; prev = null; fresh = true;
+        }
+        paint();
+    }
+    document.getElementById('keys').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) press(b.dataset.a, b.dataset.v); });
+    document.addEventListener('keydown', function (e) {
+        var k = e.key, map = {'+': '+', '-': '−', '*': '×', '/': '÷'};
+        if (/^[0-9]$/.test(k)) press('d', k);
+        else if (map[k]) { e.preventDefault(); press('op', map[k]); }
+        else if (k === '.' || k === ',') press('dot');
+        else if (k === 'Enter' || k === '=') { e.preventDefault(); press('eq'); }
+        else if (k === 'Backspace') press('back');
+        else if (k === 'Escape') press('clear');
+        else if (k === '%') press('pct');
+    });
+})();
+</script>
+{% endblock %}
