@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %} - ShopLi</title>
-    <link rel="stylesheet" href="{% static 'ShopLi/css/app.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'ShopLi/logo.png' %}">
+    <link rel="stylesheet" href="{% static 'ShopLi/css/shopli.css' %}?v=4">
 </head>
 <body class="auth-body">
     <div class="auth-shell">
         <section class="auth-side">
-            <div class="logo-ph" aria-hidden="true">LOGO</div>
+            <img class="auth-logo" width="120" src="{% static 'ShopLi/logo.png' %}" alt="ShopLi logo">
             <h1>ShopLi</h1>
             <p>Store management made simple. Manage your products, track your stock and ring up sales, all in one place.</p>
         </section>

@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ShopLi{% endblock %} - ShopLi</title>
-    <link rel="stylesheet" href="{% static 'ShopLi/css/app.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'ShopLi/logo.png' %}">
+    <link rel="stylesheet" href="{% static 'ShopLi/css/shopli.css' %}?v=4">
 </head>
 <body>
     <header class="topbar">
         <a class="brand" href="{% url 'home' %}">
-            <!-- Logo placeholder: swap this div for <img src="{% static 'ShopLi/logo.png' %}" height="40" alt=""> when you have a logo -->
-            <div class="logo-ph" aria-hidden="true">LOGO</div>
+            <img class="logo-img" height="46" src="{% static 'ShopLi/logo.png' %}" alt="ShopLi logo">
             <span class="brand-name">ShopLi</span>
         </a>
 

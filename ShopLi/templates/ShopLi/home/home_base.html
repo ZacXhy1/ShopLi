@@ -4,9 +4,9 @@
 <nav class="subnav no-print" aria-label="Home sections">
     <a href="{% url 'home' %}" class="{% if n == 'home' %}active{% endif %}">Overview</a>
     <a href="{% url 'pos' %}" class="{% if n == 'pos' %}active{% endif %}">POS</a>
-    <a href="{% url 'receipts' %}" class="{% if n == 'receipts' or n == 'receipt_detail' %}active{% endif %}">Receipts</a>
-    <a href="{% url 'customers' %}" class="{% if n == 'customers' or n == 'customer_add' or n == 'customer_edit' %}active{% endif %}">Customers</a>
     <a href="{% url 'calculator' %}" class="{% if n == 'calculator' %}active{% endif %}">Calculator</a>
+    <a href="{% url 'customers' %}" class="{% if n == 'customers' or n == 'customer_add' or n == 'customer_edit' %}active{% endif %}">Customers</a>
+    <a href="{% url 'receipts' %}" class="{% if n == 'receipts' or n == 'receipt_detail' %}active{% endif %}">Receipts</a>
     <a href="{% url 'analytics' %}" class="{% if n == 'analytics' %}active{% endif %}">Analytics</a>
     <a href="{% url 'tutorials' %}" class="{% if n == 'tutorials' %}active{% endif %}">Tutorials</a>
 </nav>

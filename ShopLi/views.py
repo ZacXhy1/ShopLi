@@ -88,10 +88,11 @@ def home(request):
         'low_stock': products.filter(quantity__lte=F('low_stock_threshold')).count(),
         'recent': Sale.objects.filter(store=store).select_related('customer')[:5],
         'features': [
+            # Shown as a 3 x 2 grid, row by row
             ('pos', 'POS', 'Ring up a sale at the counter.', '🛒'),
-            ('receipts', 'Receipts', 'Look up and print past sales.', '🧾'),
-            ('customers', 'Customers', 'Keep your regulars in one list.', '👥'),
             ('calculator', 'Calculator', 'Quick math without leaving ShopLi.', '🧮'),
+            ('customers', 'Customers', 'Keep your regulars in one list.', '👥'),
+            ('receipts', 'Receipts', 'Look up and print past sales.', '🧾'),
             ('analytics', 'Analytics', 'Sales, profit and top sellers.', '📊'),
             ('tutorials', 'Tutorials', 'Step-by-step guides.', '🎓'),
         ],

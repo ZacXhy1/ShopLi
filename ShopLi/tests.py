@@ -91,6 +91,13 @@ class ShopLiTests(TestCase):
                      'Home', 'Inventory', 'Product', 'Store']:
             self.assertIn(text, html)
 
+    def test_home_tiles_are_in_the_requested_3x2_order_and_logo_is_used(self):
+        resp = self.client.get(reverse('home'))
+        self.assertEqual([f[1] for f in resp.context['features']],
+                         ['POS', 'Calculator', 'Customers', 'Receipts', 'Analytics', 'Tutorials'])
+        self.assertContains(resp, 'ShopLi/logo.png')
+        self.assertNotContains(resp, 'logo-ph')
+
     def test_fab_on_home_links_to_add_product(self):
         self.assertContains(self.client.get(reverse('home')), 'class="fab" href="/products/add/')
 
